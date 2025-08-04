@@ -1,0 +1,87 @@
+{
+  "type": "Settings",
+  "audio": {
+    "input": {
+      "encoding": "mulaw",
+      "sample_rate": 8000
+    },
+    "output": {
+      "encoding": "mulaw",
+      "sample_rate": 8000,
+      "container": "none"
+    }
+  },
+  "agent": {
+    "language": "en",
+    "listen": {
+      "provider": {
+        "type": "deepgram",
+        "model": "nova-3",
+        "keyterms": ["hello", "goodbye"]
+      }
+    },
+    "think": {
+      "provider": {
+        "type": "open_ai",
+        "model": "gpt-4o-mini",
+        "temperature": 0.7
+      },
+      "prompt": "You're working as an assistant at a small restaurant, and your job is to help customers with anything they need. You can tell them what's on the menu, check if something's available, place new orders for them, or check an existing order if they give you the number. When someone wants to order, ask them to say their full name clearly so you can get it right, and always confirm what they want before you place the order. Go over the name, the items, how many they want, and whether it's for pickup or delivery. If something isn't clear, it's okay to ask them to repeat or spell it out. Keep things friendly, easygoing, and helpful—like you're talking to someone standing at the counter in front of you.",
+      "functions": [
+        {
+          "name": "get_menu_item_info",
+          "description": "Get detailed information about a specific menu item. Use this function when: A customer asks about the description, ingredients, or price of a dish. A customer says things like 'What's in the burger?' or 'Tell me about your pizza'. Always provide helpful information about the item’s contents, cost, and portion size.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "item_name": {
+                "type": "string",
+                "description": "Name of the menu item to look up. Convert to lowercase for matching. Examples: 'burger', 'pizza', 'salad'"
+              }
+            },
+            "required": ["item_name"]
+          }
+        },
+        {
+          "name": "place_order",
+          "description": "Place a new food order for a customer. Use this function when: A customer wants to order food. A customer says things like 'I’d like to order a burger' or 'Can I get a pizza?'. Each item has a predefined quantity. Before placing an order: Verify the item exists using get_menu_item_info. Get the customer's name. Always confirm the order details before processing.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "customer_name": {
+                "type": "string",
+                "description": "Customer's full name for the order. Use as provided by the customer."
+              },
+              "item_name": {
+                "type": "string",
+                "description": "Name of the menu item to order. Convert to lowercase for matching. Must be a valid item in our menu. Examples: 'burger', 'fries', 'coffee'"
+              }
+            },
+            "required": ["customer_name", "item_name"]
+          }
+        },
+        {
+          "name": "lookup_order",
+          "description": "Look up an existing food order by its ID. Use this function when: A customer wants to check order status. A customer says things like 'Where’s my order?' or 'Check order number'. Always verify the order exists and provide clear details about it.",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "order_id": {
+                "type": "integer",
+                "description": "The order ID number to look up. Must be a valid order number in our system."
+              }
+            },
+            "required": ["order_id"]
+          }
+        }
+      ]
+    },
+    "speak": {
+      "provider": {
+        "type": "deepgram",
+        "model": "aura-2-thalia-en"
+      }
+    },
+    "greeting": "Hello! I'm your order assistant. I can help you with today's menu, place new orders, or check existing ones. When placing an order, I’ll ask for your full name and confirm all the order details with you. How can I assist you today?"
+  }
+}
